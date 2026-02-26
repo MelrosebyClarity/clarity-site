@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLARITY - Genius Developer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@100;300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{ box-sizing:border-box; }
+html,body{
+  margin:0; padding:0;
+  height:100%; overflow:hidden;
+  background:black;
+  font-family:'Montserrat', sans-serif;
+  cursor:none;
+}
+
+/* ===== CURSEUR LOSANGE ===== */
+.cursor{
+  position:fixed;
+  width:10px; height:10px;
+  pointer-events:none;
+  z-index:9999;
+  transform:translate(-50%,-50%) rotate(45deg);
+  background:rgba(94,207,223,0.9);
+  box-shadow: 0 0 8px rgba(94,207,223,0.6);
+  transition: width 0.25s ease, height 0.25s ease, background 0.25s ease;
+  animation: diamondSpin 4s linear infinite;
+}
+.cursor.hovering{
+  width:14px; height:14px;
+  background:rgba(255,255,255,0.9);
+  box-shadow: 0 0 12px rgba(94,207,223,0.8);
+}
+@keyframes diamondSpin{
+  from{ transform:translate(-50%,-50%) rotate(45deg); }
+  to  { transform:translate(-50%,-50%) rotate(405deg); }
+}
+
+.cursor-ring{
+  position:fixed;
+  width:28px; height:28px;
+  pointer-events:none;
+  z-index:9998;
+  transform:translate(-50%,-50%) rotate(45deg);
+  border:1px solid rgba(94,207,223,0.35);
+  transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+  animation: ringSpinSlow 8s linear infinite;
+}
+.cursor-ring.hovering{
+  width:44px; height:44px;
+  border-color:rgba(94,207,223,0.7);
+}
+@keyframes ringSpinSlow{
+  from{ transform:translate(-50%,-50%) rotate(45deg); }
+  to  { transform:translate(-50%,-50%) rotate(-315deg); }
+}
+
+/* ===== VIDEO ===== */
+#bgVideo{
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  filter: brightness(0.42) contrast(1.2) saturate(1.15);
+  z-index:1;
+  transform-origin:center center;
+  transition: transform 0.1s ease-out;
+}
+
+/* ===== VIGNETTE DYNAMIQUE ===== */
+.vignette{
+  position:fixed;
+  inset:0;
+  background: radial-gradient(ellipse at var(--mx,50%) var(--my,50%),
+    transparent 40%,
+    rgba(0,0,0,0.28) 75%,
+    rgba(0,0,0,0.48) 100%
+  );
+  z-index:2;
+  pointer-events:none;
+  transition: background 0.6s ease;
+}
+
+/* ===== OVERLAY TEAL ===== */
+.overlay{
+  position:fixed; inset:0;
+  background:
+    radial-gradient(ellipse at 50% 85%, rgba(40,160,180,0.07), transparent 55%),
+    radial-gradient(ellipse at 50% 5%,  rgba(60,100,180,0.06), transparent 50%),
+    rgba(4,8,20,0.55);
+  z-index:3;
+  pointer-events:none;
+}
+
+/* ===== GRAIN ===== */
+.grain{
+  position:fixed; inset:0;
+  pointer-events:none;
+  opacity:0.055;
+  background:url("https://grainy-gradients.vercel.app/noise.svg");
+  mix-blend-mode:overlay;
+  z-index:4;
+}
+
+/* ===== SCANLINES MANGA ===== */
+.scanlines{
+  position:fixed; inset:0;
+  pointer-events:none;
+  z-index:5;
+  background:repeating-linear-gradient(
+    0deg,
+    rgba(0,0,0,0.08) 0px,
+    rgba(0,0,0,0.08) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  animation: scanAnim 0.2s linear infinite;
+}
+@keyframes scanAnim{
+  0%  { transform:translateY(0); }
+  100%{ transform:translateY(4px); }
+}
+
+/* ===== GOUTTES D'EAU SUR LA VITRE ===== */
+#rainCanvas{
+  position:fixed;
+  inset:0;
+  width:100%; height:100%;
+  pointer-events:none;
+  z-index:6;
+  opacity:0.55;
+}
+
+/* ===== REFLET EAU SOL ===== */
+.water-reflect{
+  position:fixed;
+  bottom:0; left:0;
+  width:100%; height:32%;
+  background:linear-gradient(to top,
+    rgba(30,140,170,0.09) 0%,
+    rgba(50,110,160,0.04) 50%,
+    transparent 100%
+  );
+  z-index:7;
+  pointer-events:none;
+  animation: waterShimmer 5s ease-in-out infinite alternate;
+}
+@keyframes waterShimmer{
+  0%  { opacity:0.5; transform:scaleX(1) skewX(0deg); }
+  100%{ opacity:0.9; transform:scaleX(1.01) skewX(0.3deg); }
+}
+
+/* ===== NUAGES ===== */
+.clouds{
+  position:fixed;
+  width:250%; height:40%;
+  top:4%;
+  pointer-events:none;
+  z-index:7;
+  background:
+    radial-gradient(ellipse 400px 90px at 15% 50%, rgba(200,225,255,0.05), transparent),
+    radial-gradient(ellipse 300px 70px at 50% 40%, rgba(180,210,255,0.04), transparent),
+    radial-gradient(ellipse 350px 80px at 82% 55%, rgba(190,220,255,0.045), transparent);
+  animation: cloudsDrift 22s linear infinite;
+}
+@keyframes cloudsDrift{
+  from{ transform:translateX(0); }
+  to  { transform:translateX(-40%); }
+}
+
+/* ===== BANDES CINEMA ===== */
+.cinema-top, .cinema-bottom{
+  position:fixed;
+  left:0; width:100%;
+  pointer-events:none;
+  z-index:50;
+}
+.cinema-top{
+  top:0; height:7%;
+  background:linear-gradient(to bottom, rgba(0,0,0,0.92), transparent);
+}
+.cinema-bottom{
+  bottom:0; height:7%;
+  background:linear-gradient(to top, rgba(0,0,0,0.92), transparent);
+}
+
+/* ===== LOGO ===== */
+.logo{
+  position:fixed;
+  top:28px; left:50%;
+  transform:translateX(-50%);
+  width:100px;
+  z-index:100;
+  opacity:0;
+  animation: logoIn 1.2s cubic-bezier(0.34,1.56,0.64,1) forwards 0.5s;
+  filter: drop-shadow(0 0 7px rgba(80,200,220,0.35));
+  transition: filter 0.4s ease, transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  cursor:none;
+}
+.logo:hover{
+  transform:translateX(-50%) scale(1.12);
+  filter: drop-shadow(0 0 14px rgba(80,200,220,0.55));
+}
+@keyframes logoIn{
+  from{ opacity:0; transform:translateX(-50%) translateY(-25px); }
+  to  { opacity:1; transform:translateX(-50%) translateY(0); }
+}
+
+/* ===== CONTENU PRINCIPAL ===== */
+.content{
+  position:fixed;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  text-align:center;
+  color:white;
+  z-index:20;
+  will-change:transform;
+}
+
+h1{
+  font-family:'Cormorant Garamond', serif;
+  font-size:88px;
+  font-weight:700;
+  letter-spacing:22px;
+  margin:0;
+  background:linear-gradient(135deg, #f0f4ff 0%, #5ecfdf 38%, #a8d8ff 68%, #f0f4ff 100%);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation: titleIn 1.4s ease forwards, titleBreath 6s ease-in-out infinite;
+  opacity:0;
+}
+@keyframes titleIn{
+  from{ opacity:0; transform:scaleY(0.82) translateY(10px); }
+  to  { opacity:1; transform:scaleY(1) translateY(0); }
+}
+@keyframes titleBreath{
+  0%,100%{ filter:drop-shadow(0 0 5px rgba(80,200,220,0.15)); }
+  50%    { filter:drop-shadow(0 0 12px rgba(80,200,220,0.35)); }
+}
+
+.subtitle{
+  font-size:20px;
+  letter-spacing:10px;
+  margin-top:18px;
+  font-weight:300;
+  text-transform:uppercase;
+  opacity:0;
+  animation: fadeUp 1s ease forwards 0.3s;
+  color:rgba(255,255,255,0.75);
+}
+
+.tagline{
+  font-size:12px;
+  letter-spacing:5px;
+  margin-top:26px;
+  font-weight:600;
+  text-transform:uppercase;
+  color:rgba(94,207,223,0.8);
+  padding:12px 28px;
+  border-radius:50px;
+  border:1px solid rgba(94,207,223,0.25);
+  display:inline-block;
+  opacity:0;
+  animation: fadeUp 1s ease forwards 0.55s;
+  backdrop-filter:blur(6px);
+  background:rgba(4,8,20,0.3);
+}
+
+@keyframes fadeUp{
+  from{ opacity:0; transform:translateY(18px); }
+  to  { opacity:1; transform:translateY(0); }
+}
+
+/* ===== CLIFFHANGER ===== */
+.cliffhanger{
+  position:fixed;
+  bottom:145px; left:50%;
+  transform:translateX(-50%);
+  z-index:20;
+  opacity:0;
+  animation: cliffIn 1.2s ease forwards 2.2s;
+  text-align:center;
+  max-width:680px;
+  width:90%;
+}
+@keyframes cliffIn{
+  from{ opacity:0; transform:translateX(-50%) translateY(30px); }
+  to  { opacity:1; transform:translateX(-50%) translateY(0); }
+}
+
+.sep{
+  width:80px; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(94,207,223,0.5), transparent);
+  margin:16px auto;
+  opacity:0;
+  animation: sepIn 0.8s ease forwards 2.6s;
+}
+@keyframes sepIn{ to{ opacity:1; } }
+
+.cliffhanger-text{
+  font-family:'Cormorant Garamond', serif;
+  font-size:24px;
+  font-weight:600;
+  letter-spacing:5px;
+  color:rgba(255,255,255,0.9);
+  text-transform:uppercase;
+  margin:0;
+  line-height:1.6;
+}
+
+.next-episode{
+  font-size:11px;
+  letter-spacing:4px;
+  color:rgba(94,207,223,0.65);
+  text-transform:uppercase;
+  font-weight:500;
+  margin:0;
+  opacity:0;
+  animation: fadeUp 0.8s ease forwards 2.9s;
+}
+
+/* ===== VOLUME ===== */
+.volume-control{
+  position:fixed;
+  bottom:32px; left:28px;
+  z-index:99;
+  opacity:0;
+  animation: slideLeft 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards 1s;
+  display:flex; align-items:center; gap:12px;
+  background:rgba(4,10,22,0.6);
+  backdrop-filter:blur(16px);
+  padding:11px 20px;
+  border-radius:50px;
+  border:1px solid rgba(94,207,223,0.2);
+  transition:border-color 0.3s;
+}
+.volume-control:hover{ border-color:rgba(94,207,223,0.4); }
+@keyframes slideLeft{
+  from{ opacity:0; transform:translateX(-35px); }
+  to  { opacity:1; transform:translateX(0); }
+}
+.volume-icon{ color:#5ecfdf; font-size:16px; }
+.volume-slider{
+  width:120px; height:4px;
+  border-radius:4px;
+  background:rgba(94,207,223,0.15);
+  outline:none; -webkit-appearance:none; appearance:none; cursor:none;
+}
+.volume-slider::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none;
+  width:13px; height:13px; border-radius:50%;
+  background:#5ecfdf; cursor:none;
+  box-shadow:0 0 5px rgba(80,200,220,0.35);
+}
+.volume-value{ font-size:11px; color:rgba(94,207,223,0.7); min-width:36px; text-align:right; font-weight:600; letter-spacing:1px; }
+
+/* ===== SOUND BTN ===== */
+.sound{
+  position:fixed;
+  bottom:28px; right:28px;
+  width:52px; height:52px;
+  border-radius:50%;
+  background:rgba(4,10,22,0.6);
+  backdrop-filter:blur(12px);
+  display:flex; align-items:center; justify-content:center;
+  cursor:none;
+  z-index:99;
+  transition:border-color 0.3s, box-shadow 0.3s;
+  border:1px solid rgba(94,207,223,0.2);
+  font-size:20px;
+  opacity:0;
+  animation: slideRight 0.8s cubic-bezier(0.34,1.56,0.64,1) forwards 1s;
+}
+.sound:hover, .sound.active{ border-color:rgba(94,207,223,0.5); box-shadow:0 0 12px rgba(80,200,220,0.15); }
+@keyframes slideRight{
+  from{ opacity:0; transform:translateX(35px); }
+  to  { opacity:1; transform:translateX(0); }
+}
+
+/* ===== DISCORD ===== */
+.discord-btn{
+  position:fixed;
+  bottom:32px; left:50%;
+  transform:translateX(-50%);
+  display:flex; align-items:center; justify-content:center;
+  gap:12px;
+  padding:16px 44px;
+  border-radius:60px;
+  background:rgba(4,12,28,0.72);
+  backdrop-filter:blur(22px);
+  color:white;
+  cursor:none;
+  z-index:101;
+  opacity:0;
+  animation: popUp 0.9s cubic-bezier(0.34,1.56,0.64,1) forwards 1.2s;
+  box-shadow: 0 0 0 1px rgba(94,207,223,0.22), inset 0 1px 0 rgba(255,255,255,0.05);
+  transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  font-weight:600; font-size:12px;
+  text-transform:uppercase; letter-spacing:3px;
+  overflow:hidden;
+}
+@keyframes popUp{
+  from{ opacity:0; transform:translateX(-50%) translateY(50px) scale(0.88); }
+  to  { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+}
+.discord-btn::before{
+  content:'';
+  position:absolute; top:0; left:-100%;
+  width:100%; height:100%;
+  background:linear-gradient(90deg, transparent, rgba(94,207,223,0.1), transparent);
+  transition:left 0.6s ease;
+}
+.discord-btn:hover::before{ left:100%; }
+.discord-btn::after{
+  content:'';
+  position:absolute; inset:-1px;
+  border-radius:60px;
+  background:linear-gradient(135deg, rgba(94,207,223,0.6), rgba(168,216,255,0.25), rgba(94,207,223,0.05));
+  -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude;
+  opacity:0; transition:opacity 0.4s ease;
+}
+.discord-btn:hover::after{ opacity:1; }
+.discord-btn svg{
+  width:20px; height:20px; fill:#5ecfdf;
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  filter:drop-shadow(0 0 3px rgba(80,200,220,0.25));
+}
+.discord-btn:hover{
+  transform:translateX(-50%) translateY(-4px);
+  box-shadow:0 0 0 1px rgba(94,207,223,0.4), 0 12px 28px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.discord-btn:hover svg{ transform:scale(1.12) rotate(5deg); }
+
+/* ===== SPEED LINES ===== */
+.speed-lines{ position:fixed; inset:0; z-index:8; pointer-events:none; }
+.speed-line{
+  position:absolute;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+  animation:speedLine 0.8s ease forwards;
+}
+@keyframes speedLine{
+  from{ transform:scaleX(0); opacity:0; }
+  to  { transform:scaleX(1); opacity:0; }
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1024px){ h1{font-size:70px;letter-spacing:16px;} }
+@media(max-width:768px){
+  h1{font-size:52px;letter-spacing:12px;}
+  .subtitle{font-size:16px;letter-spacing:7px;}
+  .tagline{font-size:11px;padding:10px 20px;}
+  .logo{width:82px;}
+  .sound{width:46px;height:46px;font-size:18px;}
+  .volume-slider{width:90px;}
+  .cliffhanger-text{font-size:20px;}
+}
+@media(max-width:480px){
+  h1{font-size:38px;letter-spacing:8px;}
+  .subtitle{font-size:13px;}
+  .tagline{font-size:10px;padding:8px 16px;}
+  .logo{width:68px;}
+  .sound{width:42px;height:42px;font-size:16px;}
+  .volume-control{left:10px;padding:8px 14px;}
+  .volume-slider{width:80px;}
+  .cliffhanger-text{font-size:16px;letter-spacing:3px;}
+  .cliffhanger{bottom:110px;}
+}
+</style>
+</head>
+<body>
+
+<!-- CURSEUR LOSANGE -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- VIDEO -->
+<video id="bgVideo" autoplay muted playsinline preload="auto" loop>
+  <source src="video.mp4" type="video/mp4">
+</video>
+
+<!-- CANVAS PLUIE SUR VITRE -->
+<canvas id="rainCanvas"></canvas>
+
+<!-- OVERLAYS -->
+<div class="vignette" id="vignette"></div>
+<div class="overlay"></div>
+<div class="grain"></div>
+<div class="scanlines"></div>
+<div class="water-reflect"></div>
+<div class="clouds"></div>
+
+<!-- SPEED LINES -->
+<div class="speed-lines" id="speedLines"></div>
+
+<!-- BANDES CINEMA -->
+<div class="cinema-top"></div>
+<div class="cinema-bottom"></div>
+
+<!-- LOGO -->
+<img src="clarity.png" class="logo" alt="Clarity Logo">
+
+<!-- CONTENU -->
+<div class="content" id="content">
+  <h1>CLARITY</h1>
+  <div class="subtitle">Melrose</div>
+  <div class="tagline">AAA Developer &nbsp;·&nbsp; Genius Code &nbsp;·&nbsp; Next Level</div>
+</div>
+
+<!-- CLIFFHANGER -->
+<div class="cliffhanger">
+  <div class="sep"></div>
+  <p class="cliffhanger-text">UNE NOUVELLE ÈRE<br>COMMENCE ICI.</p>
+  <div class="sep"></div>
+  <p class="next-episode">L'EXCELLENCE NE S'ANNONCE PAS. ELLE SE PROUVE.</p>
+</div>
+
+<!-- VOLUME -->
+<div class="volume-control">
+  <div class="volume-icon">🔊</div>
+  <input type="range" id="volumeSlider" class="volume-slider" min="0" max="100" value="70">
+  <div class="volume-value"><span id="volumeValue">70</span>%</div>
+</div>
+
+<!-- SOUND BTN -->
+<div class="sound" id="soundBtn">🔊</div>
+
+<!-- DISCORD -->
+<div class="discord-btn" id="discordBtn">
+  <svg viewBox="0 0 24 24">
+    <path d="M20.317 4.369A19.791 19.791 0 0 0 15.885 3c-.191.328-.403.768-.552 1.11a18.27 18.27 0 0 0-5.666 0 11.64 11.64 0 0 0-.556-1.11 19.736 19.736 0 0 0-4.435 1.372C1.64 9.053.607 13.58 1.092 18.043a19.9 19.9 0 0 0 6.063 3.065c.486-.666.918-1.37 1.287-2.11-.706-.267-1.38-.6-2.02-.988.17-.124.337-.252.5-.384 3.89 1.83 8.11 1.83 11.955 0 .164.132.331.26.5.384-.64.388-1.317.72-2.024.988.37.74.802 1.444 1.29 2.11a19.89 19.89 0 0 0 6.062-3.065c.593-5.177-.993-9.665-4.388-13.674z"/>
+  </svg>
+  Rejoindre la Communauté
+</div>
+
+<script>
+/* ============================
+   CURSEUR LOSANGE
+   ============================ */
+const cursor     = document.getElementById("cursor");
+const cursorRing = document.getElementById("cursorRing");
+let mx = window.innerWidth/2, my = window.innerHeight/2;
+let rx = mx, ry = my;
+
+document.addEventListener("mousemove", e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + "px";
+  cursor.style.top  = my + "px";
+});
+
+(function animRing(){
+  rx += (mx - rx) * 0.10;
+  ry += (my - ry) * 0.10;
+  cursorRing.style.left = rx + "px";
+  cursorRing.style.top  = ry + "px";
+  requestAnimationFrame(animRing);
+})();
+
+// Hover sur éléments interactifs
+document.querySelectorAll("a, .discord-btn, .sound, .logo, .volume-slider, h1").forEach(el => {
+  el.addEventListener("mouseenter", () => { cursor.classList.add("hovering"); cursorRing.classList.add("hovering"); });
+  el.addEventListener("mouseleave", () => { cursor.classList.remove("hovering"); cursorRing.classList.remove("hovering"); });
+});
+
+/* ============================
+   VIDEO & SON
+   ============================ */
+const video       = document.getElementById("bgVideo");
+const soundBtn    = document.getElementById("soundBtn");
+const volumeSlider= document.getElementById("volumeSlider");
+const volumeValue = document.getElementById("volumeValue");
+
+video.muted  = true;
+video.volume = 0.7;
+soundBtn.classList.add("active");
+video.play().catch(()=>{});
+
+video.addEventListener("ended", () => { video.currentTime=0; video.play().catch(()=>{}); });
+
+document.addEventListener("click", () => {
+  video.muted  = false;
+  video.volume = volumeSlider.value / 100;
+}, { once: true });
+
+volumeSlider.addEventListener("input", e => {
+  const vol = e.target.value / 100;
+  video.volume = vol;
+  volumeValue.textContent = e.target.value;
+  video.muted = vol === 0;
+  soundBtn.classList.toggle("active", vol > 0);
+});
+
+soundBtn.addEventListener("click", () => {
+  if(video.muted || video.volume === 0){
+    video.muted = false;
+    soundBtn.classList.add("active");
+    let v = 0.2;
+    const f = setInterval(()=>{ if(v<0.7){ v+=0.05; video.volume=v; volumeValue.textContent=Math.round(v*100); volumeSlider.value=Math.round(v*100); } else clearInterval(f); }, 50);
+  } else {
+    soundBtn.classList.remove("active");
+    let v = video.volume;
+    const f = setInterval(()=>{ if(v>0.05){ v-=0.05; video.volume=v; volumeValue.textContent=Math.round(v*100); volumeSlider.value=Math.round(v*100); } else { video.muted=true; clearInterval(f); } }, 50);
+  }
+});
+
+document.getElementById("discordBtn").addEventListener("click", () => {
+  window.open("https://discord.gg/XK9vE2ybNV","_blank");
+});
+
+/* ============================
+   PARALLAX PROFOND
+   La souris bouge : contenu, vidéo, vignette
+   ============================ */
+const content  = document.getElementById("content");
+const vignette = document.getElementById("vignette");
+let targetX=0, targetY=0, currentX=0, currentY=0;
+
+document.addEventListener("mousemove", e => {
+  targetX = (e.clientX / window.innerWidth  - 0.5);
+  targetY = (e.clientY / window.innerHeight - 0.5);
+  // Vignette suit la souris (zone lumineuse)
+  vignette.style.setProperty("--mx", (e.clientX/window.innerWidth*100)+"%");
+  vignette.style.setProperty("--my", (e.clientY/window.innerHeight*100)+"%");
+});
+
+(function parallaxLoop(){
+  currentX += (targetX - currentX) * 0.04;
+  currentY += (targetY - currentY) * 0.04;
+  // Contenu : léger déplacement inverse
+  content.style.transform = `translate(calc(-50% + ${-currentX*18}px), calc(-50% + ${-currentY*12}px))`;
+  // Vidéo : déplacement doux dans le même sens (sensation 3D)
+  video.style.transform   = `scale(1.08) translate(${currentX*22}px, ${currentY*14}px)`;
+  requestAnimationFrame(parallaxLoop);
+})();
+
+/* ============================
+   GOUTTES D'EAU SUR LA VITRE (Canvas)
+   ============================ */
+const canvas = document.getElementById("rainCanvas");
+const ctx    = canvas.getContext("2d");
+let drops    = [];
+
+function resize(){
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+class Drop {
+  constructor(){
+    this.reset();
+  }
+  reset(){
+    this.x      = Math.random() * canvas.width;
+    this.y      = Math.random() * canvas.height * 0.75;
+    this.r      = 1.5 + Math.random() * 3.5;
+    this.speedY = 0.4 + Math.random() * 0.7;
+    this.speedX = (Math.random() - 0.5) * 0.15;
+    this.life   = 0;
+    this.maxLife= 200 + Math.random() * 250;
+    this.trail  = [];
+    this.sliding= false;
+    this.slideTimer = 80 + Math.random() * 140;
+  }
+  update(){
+    this.life++;
+    if(this.life > this.slideTimer) this.sliding = true;
+    if(this.sliding){
+      this.trail.push({ x: this.x, y: this.y });
+      if(this.trail.length > 6) this.trail.shift();
+      this.x += this.speedX;
+      this.y += this.speedY;
+    }
+    if(this.y > canvas.height + 20 || this.life > this.maxLife) this.reset();
+  }
+  draw(){
+    const alpha = Math.min(1, (this.maxLife - this.life) / 60) * 0.6;
+    // Traînée courte et fine
+    if(this.trail.length > 1){
+      ctx.beginPath();
+      ctx.moveTo(this.trail[0].x, this.trail[0].y);
+      for(let i=1;i<this.trail.length;i++) ctx.lineTo(this.trail[i].x, this.trail[i].y);
+      ctx.strokeStyle = `rgba(140,210,230,${alpha*0.25})`;
+      ctx.lineWidth   = this.r * 0.3;
+      ctx.lineCap     = "round";
+      ctx.stroke();
+    }
+    // Goutte ronde avec reflet
+    const grad = ctx.createRadialGradient(
+      this.x - this.r*0.3, this.y - this.r*0.3, this.r*0.1,
+      this.x, this.y, this.r
+    );
+    grad.addColorStop(0,   `rgba(220,245,255,${alpha*0.95})`);
+    grad.addColorStop(0.4, `rgba(140,205,225,${alpha*0.55})`);
+    grad.addColorStop(1,   `rgba(80,155,195,${alpha*0.08})`);
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+  }
+}
+
+// Init gouttes
+for(let i=0;i<55;i++){
+  const d = new Drop();
+  d.life = Math.random() * d.maxLife; // décaler pour éviter sync
+  drops.push(d);
+}
+
+(function rainLoop(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drops.forEach(d=>{ d.update(); d.draw(); });
+  requestAnimationFrame(rainLoop);
+})();
+
+/* ============================
+   SPEED LINES (easter egg h1)
+   ============================ */
+function createSpeedLines(count=10){
+  const c = document.getElementById("speedLines");
+  c.innerHTML="";
+  for(let i=0;i<count;i++){
+    const l=document.createElement("div");
+    l.classList.add("speed-line");
+    l.style.width  = (140+Math.random()*280)+"px";
+    l.style.height = (1+Math.random()*2.5)+"px";
+    l.style.left   = Math.random()*100+"%";
+    l.style.top    = Math.random()*100+"%";
+    l.style.animationDelay = (Math.random()*0.35)+"s";
+    c.appendChild(l);
+  }
+}
+createSpeedLines(8);
+
+document.querySelector("h1").addEventListener("click", () => createSpeedLines(28));
+
+console.log("%c🚀 CLARITY — GENIUS DEVELOPER", "color:#5ecfdf;font-size:18px;font-weight:bold;");
+</script>
+</body>
+</html>
